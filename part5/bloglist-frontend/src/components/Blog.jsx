@@ -15,26 +15,19 @@ const Blog = ({ blog, handleLike, handleDelete }) => {
     marginBottom: 5
   }
 
-const currentUser = JSON.parse(localStorage.getItem('loggedBlogAppUser'))
-
-const blogUserId = 
-  blog.user?.id || blog.user?._id || blog.user
-
-const currentUserId =
-  currentUser?.id || currentUser?._id
-
-const showDelete =
-  currentUser && blogUserId === currentUserId
+  const currentUser = JSON.parse(localStorage.getItem('loggedBlogAppUser'))
+  const blogUserId = String(blog.user?.id || blog.user?._id || blog.user)
+  const currentUserId = String(currentUser?.id || currentUser?._id)
+  const showDelete = currentUser && blogUserId === currentUserId
 
   return (
-    <div style={blogStyle}>
-      <div className = "blog">
+    <div style={blogStyle} className="blogItem">
+      <div className="blog">
         {blog.title} {blog.author}
         <button onClick={toggleVisibility}>
           {visible ? 'hide' : 'view'}
         </button>
       </div>
-
       {visible && (
         <div className="togglableContent">
           <div>{blog.url}</div>
@@ -42,12 +35,9 @@ const showDelete =
             <button onClick={() => handleLike(blog)}>like</button>
           </div>
           <div>{blog.user?.name}</div>
-
-           {showDelete && (
-      <button onClick={() => handleDelete(blog)}>
-        remove
-      </button>
-    )}
+          {showDelete && (
+            <button onClick={() => handleDelete(blog)}>remove</button>
+          )}
         </div>
       )}
     </div>

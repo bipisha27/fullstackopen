@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-	  "start": "cross-env NODE_ENV=production node index.js",
-	  "dev": "cross-env NODE_ENV=development node --watch index.js",
-	  "test": "cross-env NODE_ENV=test node --test",
-	  "lint": "eslint .",
-	  "start:test": "cross-env NODE_ENV=test node --watch index.js"
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
+    "test": "cross-env NODE_ENV=test node --test",
+    "lint": "eslint .",
+    "start:test": "cross-env NODE_ENV=test node --watch index.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,8 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1"

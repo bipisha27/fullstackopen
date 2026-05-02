@@ -11,21 +11,16 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [notification, setNotification] = useState(null)
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
 
   const blogFormRef = useRef()
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
-
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
       blogService.setToken(user.token)
     }
-
     blogService.getAll().then(blogs => setBlogs(blogs))
   }, [])
 
@@ -36,15 +31,9 @@ const App = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault()
-
     try {
       const user = await loginService.login({ username, password })
-
-      window.localStorage.setItem(
-        'loggedBlogAppUser',
-        JSON.stringify(user)
-      )
-
+      window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user))
       blogService.setToken(user.token)
       setUser(user)
       setUsername('')
@@ -61,24 +50,11 @@ const App = () => {
     blogService.setToken(null)
   }
 
-  const addBlog = async () => {
-    const blogObject = {
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl
-    }
-
+  const addBlog = async (blogObject) => {
     try {
       const returnedBlog = await blogService.create(blogObject)
-
       setBlogs(blogs.concat(returnedBlog))
-
-      setNewTitle('')
-      setNewAuthor('')
-      setNewUrl('')
-
       blogFormRef.current.toggleVisibility()
-
       showNotification(
         `a new blog "${returnedBlog.title}" by "${returnedBlog.author}" added`,
         'success'
@@ -91,36 +67,28 @@ const App = () => {
   const handleLike = async (blog) => {
     const updatedBlog = {
       ...blog,
-      likes : blog.likes + 1,
-      user: blog.user?.id || blog.user 
+      likes: blog.likes + 1,
+      user: blog.user?.id || blog.user
     }
-
     const returnedBlog = await blogService.update(blog.id, updatedBlog)
-
-    setBlogs(blogs.map(b => 
-      b.id !== blog.id ? b : returnedBlog
-    )) //update the blog list but replace only the liked blog with the new one
+    setBlogs(blogs.map(b => b.id !== blog.id ? b : returnedBlog))
   }
 
   const handleDelete = async (blog) => {
     const confirmDelete = window.confirm(
       `Remove blog "${blog.title}" by "${blog.author}"?`
     )
-    if(!confirmDelete) return
-
+    if (!confirmDelete) return
     await blogService.remove(blog.id)
-
     setBlogs(blogs.filter(b => b.id !== blog.id))
   }
 
   return (
     <div>
       {notification && <div>{notification.message}</div>}
-
       {user === null ? (
         <div>
           <h2>Login</h2>
-
           <form onSubmit={handleLogin}>
             <div>
               username
@@ -129,7 +97,6 @@ const App = () => {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
-
             <div>
               password
               <input
@@ -138,7 +105,6 @@ const App = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
             <button type="submit">login</button>
           </form>
         </div>
@@ -147,29 +113,19 @@ const App = () => {
           <h2>blogs</h2>
           <p>{user.name} logged in</p>
           <button onClick={handleLogout}>logout</button>
-
           <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-            <BlogForm
-              createBlog={addBlog}
-              newTitle={newTitle}
-              setNewTitle={setNewTitle}
-              newAuthor={newAuthor}
-              setNewAuthor={setNewAuthor}
-              newUrl={newUrl}
-              setNewUrl={setNewUrl}
-            />
+            <BlogForm createBlog={addBlog} />
           </Togglable>
-
           {blogs
-          .slice()
-          .sort((a,b) => b.likes - a.likes)
-          .map(blog => (
-            <Blog key={blog.id} blog={blog} handleLike={handleLike} handleDelete={handleDelete} />
-          ))}
+            .slice()
+            .sort((a, b) => b.likes - a.likes)
+            .map(blog => (
+              <Blog key={blog.id} blog={blog} handleLike={handleLike} handleDelete={handleDelete} />
+            ))}
         </div>
       )}
     </div>
   )
 }
-export default App
 
+export default App
