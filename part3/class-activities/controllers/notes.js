@@ -14,7 +14,7 @@ const getTokenFrom = request => {
 }
 
 notesRouter.get('/', async (request, response) => {
-  const notes = await Note.find({})
+  const notes = await Note.find({}).populate('user', { username: 1, name: 1 })
   response.json(notes)
 })
 
@@ -68,7 +68,36 @@ notesRouter.post('/', async (request, response) => {
 })
 
 notesRouter.delete('/:id', async (request, response) => {
+  const token = getTokenFrom(request)
+
+  if (!token) {
+    return response.status(401).json({ error: 'token missing' })
+  }
+
+  let decodedToken
+
+  try {
+    decodedToken = jwt.verify(token, process.env.SECRET)
+  } catch (error) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+
+  if (!decodedToken || !decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+
+  const note = await Note.findById(request.params.id)
+
+  if (!note) {
+    return response.status(404).end()
+  }
+
+  if (note.user.toString() !== decodedToken.id.toString()) {
+    return response.status(401).json({ error: 'not authorized' })
+  }
+
   await Note.findByIdAndDelete(request.params.id)
+
   response.status(204).end()
 })
 
