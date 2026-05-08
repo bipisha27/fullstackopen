@@ -84,14 +84,14 @@ const App = () => {
     navigate('/login')
   }
 
-  const deleteNote = async(id) => {
-    try{
-      await noteService.remove(id)
-      setNotes(notes.filter(n => n.id !== id))
-    } catch(error) {
-      console.error('Delete failed', error)
-    }
+const deleteNote = async(id) => {
+  try{
+    await noteService.remove(id)
+    setNotes(prev => prev.filter(n => n.id !== id))
+  } catch(error) {
+    console.error('Delete failed', error)
   }
+}
 
   const padding = { padding: 5 }
 
@@ -100,11 +100,12 @@ const App = () => {
     : notes.filter(note => note.important)
 
   const match = useMatch('/notes/:id')
-  console.log(match)
 
   const note = match && notes.length > 0
     ? notes.find(n => n.id === match.params.id)
     : null 
+
+  console.log(match)
   console.log(note)
 
   return (
@@ -132,14 +133,16 @@ const App = () => {
         <Route path="/notes" element={ 
           <NoteList 
             notes={notesToShow} 
-            toggleImportance={toggleImportance} showAll={showAll}
+            toggleImportance={toggleImportance}
+            deleteNote={deleteNote}
+            showAll={showAll}
             setShowAll={setShowAll} 
             />
          } />
 
         <Route path="/notes/:id" element={
           <Note 
-            notes={note} 
+            note={note} 
             toggleImportance={toggleImportance} 
             deleteNote={deleteNote}
           />

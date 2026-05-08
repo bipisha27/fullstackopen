@@ -1,33 +1,35 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 
-const Note = ({ note, toggleImportance }) => {
+const Note = ({ note, toggleImportance, deleteNote }) => {
   const { id } = useParams()
+  const navigate = useNavigate()
 
   if (!note) {
-    return <div> note not found </div>
+    return <p>Note not found</p>
   }
 
   const label = note.important
     ? 'make not important'
     : 'make important'
 
-  const handleDelete = async() => {
-    const ok = window.confirm(`Delete note "${note.content}"?`)
+  const handleDelete = async () => {
+    const ok = window.confirm('Delete this note?')
 
-    if(ok){
-      await deleteNote(note.id)
+    if (ok) {
+      await deleteNote(id)
       navigate('/notes')
     }
   }
 
   return (
     <div>
-      <h2>{note.content}</h2>
+      <p>{note.content}</p>
 
       <button onClick={() => toggleImportance(id)}>
         {label}
       </button>
-      <button onClick={handleDelete} style={{marginLeft:'10px', color:'red'}}>
+
+      <button onClick={handleDelete}>
         delete
       </button>
     </div>

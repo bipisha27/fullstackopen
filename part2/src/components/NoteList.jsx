@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 const NoteList = ({
   notes,
   toggleImportance,
+  deleteNote,
   showAll,
   setShowAll
 }) => {
@@ -21,10 +22,16 @@ const NoteList = ({
               {note.content}
             </Link>
 
-            <button onClick={() => toggleImportance(note.id)}>
+            <button style={{marginLeft: 8}} onClick={() => toggleImportance(note.id)}>
               {note.important
                 ? 'make not important'
                 : 'make important'}
+            </button>
+
+            <button style={{marginLeft: 8}} onClick={() => {
+              console.log("noteobject:", note)
+               deleteNote(note.id)}}>
+              delete
             </button>
           </li>
         ))}
