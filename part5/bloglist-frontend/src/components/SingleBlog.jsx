@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 
-const singleBlog = ({blogs, user, handleLike, handleDelete}) => {
+const SingleBlog = ({blogs, user, handleLike, handleDelete}) => {
   const navigate = useNavigate()
   const {id} = useParams()
 
@@ -16,6 +16,9 @@ const singleBlog = ({blogs, user, handleLike, handleDelete}) => {
       <p>{blog.url}</p>
       <p>
         likes: <span data-testid="likes">{blog.likes}</span>
+        {user && (
+          <button onClick={() => handleLike(blog)}>like</button>
+        )}
       </p>
       <p>added by {blog.user?.name}</p>
       {isCreator && (
@@ -25,4 +28,4 @@ const singleBlog = ({blogs, user, handleLike, handleDelete}) => {
   )
 }
 
-export default singleBlog
+export default SingleBlog
