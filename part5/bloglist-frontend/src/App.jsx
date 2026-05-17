@@ -6,7 +6,7 @@ import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import BlogForm from './components/BlogForm'
-import singleBlog from './components/SingleBlog'
+import SingleBlog from './components/SingleBlog'
 
 const LoginView = ({ user, username, password, setUsername, setPassword, handleLogin }) => {
   if (user) return <Navigate to="/" />
@@ -52,7 +52,6 @@ const CreateBlog = ({ user, addBlog }) => {
   if (!user) return <Navigate to="/login" />
   return (
     <div>
-      <h2>Create New Blog</h2>
       <BlogForm createBlog={(blogObject) => addBlog(blogObject, navigate)} />
     </div>
   )
