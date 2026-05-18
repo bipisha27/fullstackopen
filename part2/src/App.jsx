@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useNavigate, useMatch } from 'react-router-dom'
+import styled from 'styled-components'
 import Notification from './components/notification'
 import LoginForm from './components/loginform'
 import NoteForm from './components/noteform'
@@ -10,10 +11,26 @@ import Togglable from './components/togglable'
 import loginService from './services/login'
 import noteService from './services/notes'
 
+const Page = styled.div`
+  padding: 1em;
+  background: papayawhip;
+`
+
+const Navigation = styled.div`
+  background: BurlyWood;
+  padding: 1em;
+`
+
+const Footer = styled.div`
+  background: Chocolate;
+  padding: 1em;
+  margin-top: 1em;
+`
+
 const App = () => {
   const [notes, setNotes] = useState([])
+  const [notification, setNotification] = useState(null)
   const [showAll, setShowAll] = useState(true)
-  const [errorMessage, setErrorMessage] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -23,7 +40,6 @@ const App = () => {
 
   useEffect(() => {
     noteService.getAll().then(initialNotes => {
-      console.log(JSON.stringify(initialNotes, null, 2))
       setNotes(initialNotes)
     })
   }, [])
@@ -39,25 +55,21 @@ const App = () => {
 
   const toggleImportance = (id) => {
     const note = notes.find(n => n.id === id)
-
-    const changedNote = {
-      ...note,
-      important: !note.important
-    }
-
+    const changedNote = { ...note, important: !note.important }
     noteService.update(id, changedNote)
       .then(returned => {
         setNotes(prev =>
-          prev.map(n => n.id !== id ? n : returned)
+          prev.map(n => n.id !== id ? n : { ...returned, user: note.user })
         )
       })
   }
 
   const addNote = noteObject => {
     noteFormRef.current.toggleVisibility()
-
     noteService.create(noteObject).then(returnedNote => {
-      setNotes(notes.concat(returnedNote))
+      setNotes(notes.concat({ ...returnedNote, user: user }))
+      setNotification({ text: `Note '${returnedNote.content}' added!`, type: 'success' })
+      setTimeout(() => setNotification(null), 5000)
       navigate('/')
     })
   }
@@ -73,8 +85,8 @@ const App = () => {
       setPassword('')
       navigate('/')
     } catch {
-      setErrorMessage('wrong credentials')
-      setTimeout(() => setErrorMessage(null), 5000)
+      setNotification({ text: 'wrong credentials', type: 'error' })
+      setTimeout(() => setNotification(null), 5000)
     }
   }
 
@@ -84,14 +96,14 @@ const App = () => {
     navigate('/login')
   }
 
-const deleteNote = async(id) => {
-  try{
-    await noteService.remove(id)
-    setNotes(prev => prev.filter(n => n.id !== id))
-  } catch(error) {
-    console.error('Delete failed', error)
+  const deleteNote = async (id) => {
+    try {
+      await noteService.remove(id)
+      setNotes(prev => prev.filter(n => n.id !== id))
+    } catch (error) {
+      console.error('Delete failed', error)
+    }
   }
-}
 
   const padding = { padding: 5 }
 
@@ -103,47 +115,41 @@ const deleteNote = async(id) => {
 
   const note = match && notes.length > 0
     ? notes.find(n => n.id === match.params.id)
-    : null 
-
-  console.log(match)
-  console.log(note)
+    : null
 
   return (
-    <div>
+    <Page>
+      <Navigation>
+        <Link style={padding} to="/">home</Link>
+        <Link style={padding} to="/notes">notes</Link>
+        {user
+          ? <>
+              <Link style={padding} to="/create">new note</Link>
+              <button onClick={handleLogout}>logout</button>
+            </>
+          : <Link style={padding} to="/login">login</Link>
+        }
+      </Navigation>
 
-    <div>
-      <Link style={padding} to="/">home</Link>
-
-      <Link style={padding} to="/notes">notes</Link>
-
-      {user
-        ? <button onClick={handleLogout}>logout</button>
-        : <Link style={padding} to="/login">login</Link>
-      }
-
-      {user && <Link style={padding} to="/create">new note</Link>}
-    </div> 
-
-      <Notification message={errorMessage} />
+      <Notification notification={notification} />
 
       <Routes>
-
         <Route path="/" element={<Home />} />
 
-        <Route path="/notes" element={ 
-          <NoteList 
-            notes={notesToShow} 
+        <Route path="/notes" element={
+          <NoteList
+            notes={notesToShow}
             toggleImportance={toggleImportance}
             deleteNote={deleteNote}
             showAll={showAll}
-            setShowAll={setShowAll} 
-            />
-         } />
+            setShowAll={setShowAll}
+          />
+        } />
 
         <Route path="/notes/:id" element={
-          <Note 
-            note={note} 
-            toggleImportance={toggleImportance} 
+          <Note
+            note={note}
+            toggleImportance={toggleImportance}
             deleteNote={deleteNote}
           />
         } />
@@ -165,9 +171,12 @@ const deleteNote = async(id) => {
               </Togglable>
             : <p>Please <Link to="/login">login</Link> first.</p>
         } />
-
       </Routes>
-    </div>
+
+      <Footer>
+        Note app, Department of Computer Science, University of Helsinki 2026
+      </Footer>
+    </Page>
   )
 }
 
