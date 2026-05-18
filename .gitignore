@@ -6,4 +6,4 @@ playwright-report/
 test-results/
 *.lock
 mongo password
-mongo password
+
