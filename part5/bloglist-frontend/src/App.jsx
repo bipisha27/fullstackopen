@@ -7,24 +7,114 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import BlogForm from './components/BlogForm'
 import SingleBlog from './components/SingleBlog'
+import styled from 'styled-components'
+
+const FormWrapper = styled.div`
+  background: white;
+  padding: 2em;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  max-width: 400px;
+  margin: 2em auto;
+`
+
+const FormRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1em;
+`
+
+const Label = styled.label`
+  font-weight: bold;
+  margin-bottom: 0.3em;
+  color: #333;
+`
+
+const Input = styled.input`
+  padding: 0.5em;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  &:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+  }
+`
+
+const Button = styled.button`
+  background: #4a90e2;
+  color: white;
+  border: none;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5em;
+  &:hover {
+    background: #357abd;
+  }
+`
+
+const NavBar = styled.nav`
+  background: #4a90e2;
+  padding: 1em;
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    &:hover { text-decoration: underline; }
+  }
+  button {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 0.3em 0.8em;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover { background: rgba(255,255,255,0.2); }
+  }
+  span { color: white; }
+`
+
+const Page = styled.div`
+  font-family: sans-serif;
+  background: #f5f5f5;
+  min-height: 100vh;
+`
+const NotificationBox = styled.div`
+  padding: 0.8em 1.2em;
+  margin: 1em;
+  border-radius: 6px;
+  font-weight: bold;
+  font-weight: bold;
+  background: ${props => props.type === 'error' ? '#ffe0e0' : '#e0ffe0'};
+  color: ${props => props.type === 'error' ? '#c0392b' : '#27ae60'};
+  border: 2px solid ${props => props.type === 'error' ? '#c0392b' : '#27ae60'};
+`
 
 const LoginView = ({ user, username, password, setUsername, setPassword, handleLogin }) => {
   if (user) return <Navigate to="/" />
   return (
-    <div>
+    <FormWrapper>
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
-        <div>
-          username
-          <input value={username} onChange={(e) => setUsername(e.target.value)} />
-        </div>
-        <div>
-          password
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <button type="submit">login</button>
+        <FormRow>
+          <Label>username</Label>
+          <Input value={username} onChange={(e) => setUsername(e.target.value)} />
+        </FormRow>
+        <FormRow>
+          <Label>password</Label>
+          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </FormRow>
+        <Button type="submit">login</Button>
       </form>
-    </div>
+    </FormWrapper>
   )
 }
 
@@ -129,59 +219,55 @@ const App = () => {
   }
 
   return (
-    <BrowserRouter>
-      <div>
-        {notification && (
-          <div className={`notification ${notification.type}`}>
-            {notification.message}
-          </div>
+  <BrowserRouter>
+    <Page>
+      {notification && (
+        <NotificationBox type={notification.type}>
+          {notification.message}
+        </NotificationBox>
+      )}
+
+      <NavBar>
+        <Link to="/">BLOGS</Link>
+        {user ? (
+          <>
+            <Link to="/create">NEW BLOG</Link>
+            <button onClick={handleLogout}>logout</button>
+            <span>{user.name} logged in</span>
+          </>
+        ) : (
+          <Link to="/login">LOGIN</Link>
         )}
+      </NavBar>
 
-        <nav>
-          <Link to="/">blogs</Link>
-          {' '}
-          {user ? (
-            <>
-              <Link to="/create">create new blog</Link>
-              {' '}
-              <button onClick={handleLogout}>logout</button>
-              <br />
-              <span>{user.name} logged in</span>
-              {' '}
-            </>
-          ) : (
-            <Link to="/login">login</Link>
-          )}
-        </nav>
+      <h2 style={{ padding: '0.5em 1em' }}>blogs</h2>
 
-        <h2>blogs</h2>
-
-        <Routes>
-          <Route path="/" element={<BlogList blogs={blogs} />} />
-          <Route path="/login" element={
-            <LoginView
-              user={user}
-              username={username}
-              password={password}
-              setUsername={setUsername}
-              setPassword={setPassword}
-              handleLogin={handleLogin}
-            />}
-          />
-          <Route path="/blogs/:id" element={
-            <SingleBlog
-              blogs={blogs}
-              user={user}
-              handleLike={handleLike}
-              handleDelete={handleDelete}
-            />}
-          />
-          <Route path="/create" element={
-            <CreateBlog user={user} addBlog={addBlog} />}
-          />
-        </Routes>
-      </div>
-    </BrowserRouter>
+      <Routes>
+        <Route path="/" element={<BlogList blogs={blogs} />} />
+        <Route path="/login" element={
+          <LoginView
+            user={user}
+            username={username}
+            password={password}
+            setUsername={setUsername}
+            setPassword={setPassword}
+            handleLogin={handleLogin}
+          />}
+        />
+        <Route path="/blogs/:id" element={
+          <SingleBlog
+            blogs={blogs}
+            user={user}
+            handleLike={handleLike}
+            handleDelete={handleDelete}
+          />}
+        />
+        <Route path="/create" element={
+          <CreateBlog user={user} addBlog={addBlog} />}
+        />
+      </Routes>
+    </Page>
+  </BrowserRouter>
   )
 }
 
