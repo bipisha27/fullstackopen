@@ -74,7 +74,7 @@ const SingleBlog = ({ blogs, user, handleLike, handleDelete }) => {
         <span>{blog.likes} likes</span>
         {user && <LikeButton onClick={() => handleLike(blog)}>like</LikeButton>}
       </LikeRow>
-      <InfoRow>added by {blog.user?.name}</InfoRow>
+      <InfoRow>Added by {blog.user?.name}</InfoRow>
       {isCreator && (
         <DeleteButton onClick={() => handleDelete(blog, navigate)}>
           remove

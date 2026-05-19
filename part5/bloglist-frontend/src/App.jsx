@@ -63,24 +63,21 @@ const NavBar = styled.nav`
   padding: 1em;
   display: flex;
   align-items: center;
-  gap: 1em;
   a {
     color: white;
     text-decoration: none;
     font-weight: bold;
     &:hover { text-decoration: underline; }
   }
-  button {
-    background: transparent;
-    color: white;
-    border: 1px solid white;
-    padding: 0.3em 0.8em;
-    border-radius: 4px;
-    cursor: pointer;
-    &:hover { background: rgba(255,255,255,0.2); }
-  }
-  span { color: white; }
 `
+
+const NavLinks = styled.div`
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+`
+
 
 const Page = styled.div`
   font-family: sans-serif;
@@ -96,6 +93,25 @@ const NotificationBox = styled.div`
   background: ${props => props.type === 'error' ? '#ffe0e0' : '#e0ffe0'};
   color: ${props => props.type === 'error' ? '#c0392b' : '#27ae60'};
   border: 2px solid ${props => props.type === 'error' ? '#c0392b' : '#27ae60'};
+`
+const LogoutLink = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 0;
+  &:hover { text-decoration: underline; }
+`
+const BlogItem = styled.li`
+  margin-bottom: 0.5em;
+  a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-size: 1.1em;
+    &:hover { text-decoration: underline; }
+  }
 `
 
 const LoginView = ({ user, username, password, setUsername, setPassword, handleLogin }) => {
@@ -117,25 +133,20 @@ const LoginView = ({ user, username, password, setUsername, setPassword, handleL
     </FormWrapper>
   )
 }
-
 const BlogList = ({ blogs }) => (
-  <div>
+  <ul style={{ padding: '1em 2em' }}>
     {blogs
       .slice()
       .sort((a, b) => b.likes - a.likes)
       .map(blog => (
-        <div key={blog.id} style={{
-          paddingTop: 10, paddingLeft: 2,
-          border: 'solid', borderWidth: 1, marginBottom: 5
-        }} className="blogItem">
+        <BlogItem key={blog.id} className="blogItem">
           <Link to={`/blogs/${blog.id}`}>
             {blog.title} {blog.author}
           </Link>
-        </div>
+        </BlogItem>
       ))}
-  </div>
+  </ul>
 )
-
 
 const CreateBlog = ({ user, addBlog }) => {
   const navigate = useNavigate()
@@ -153,6 +164,7 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [notification, setNotification] = useState(null)
+  const [loginMessage, setLoginMessage] = useState(null)
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
@@ -178,6 +190,8 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
+      setLoginMessage(`${user.name} logged in`)
+      setTimeout(() => setLoginMessage(null),5000)
     } catch {
       showNotification('wrong username or password', 'error')
     }
@@ -221,24 +235,32 @@ const App = () => {
   return (
   <BrowserRouter>
     <Page>
+      <NavBar>
+          <h1 style={{ color: 'white', margin: 0 }}>BLOGS APP</h1>
+          <NavLinks>
+            <Link to="/">Blogs</Link>
+            {user ? (
+              <>
+                <Link to="/create">New Blog</Link>
+                <LogoutLink onClick={handleLogout}>Logout</LogoutLink>
+              </>
+            ) : (
+              <Link to="/login">Login</Link>
+            )}
+          </NavLinks>
+        </NavBar>
+
+   {loginMessage && (
+        <p style={{ padding: '0.5em 1em', color: '#27ae60', fontWeight: 'bold' }}>
+          {loginMessage}
+        </p>
+      )}
+
       {notification && (
         <NotificationBox type={notification.type}>
           {notification.message}
         </NotificationBox>
       )}
-
-      <NavBar>
-        <Link to="/">BLOGS</Link>
-        {user ? (
-          <>
-            <Link to="/create">NEW BLOG</Link>
-            <button onClick={handleLogout}>logout</button>
-            <span>{user.name} logged in</span>
-          </>
-        ) : (
-          <Link to="/login">LOGIN</Link>
-        )}
-      </NavBar>
 
       <h2 style={{ padding: '0.5em 1em' }}>blogs</h2>
 
@@ -268,7 +290,9 @@ const App = () => {
       </Routes>
     </Page>
   </BrowserRouter>
-  )
+)
+        
+  
 }
 
 export default App
