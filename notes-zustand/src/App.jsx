@@ -1,24 +1,16 @@
-import {useNotes, useNoteActions} from './store'
+import { useNotes, useNoteActions } from './store'
+import NoteForm from './NoteForm'
+import NoteList from './NoteList'
+import VisibilityFilter from './VisibilityFilter'
 
 const App = () => {
-  const notes = useNotes()
-  const {add} = useNoteActions()
-
-  const generateId = () => Number((Math.random()* 1000000).toFixed(0))
-
-  const addNote = (e) => {
-    e.preventDefault()
-    const content = e.target.note.value
-    add({id: generateId(), content, important: false})
-    e.target.reset()
-  }
-
-  return(
+  return (
     <div>
       <NoteForm />
+      <VisibilityFilter />
       <NoteList />
     </div>
   )
 }
 
-export default App 
+export default App
