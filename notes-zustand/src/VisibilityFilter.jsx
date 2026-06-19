@@ -1,4 +1,4 @@
-import { useNoteActions } from "./store";
+import { useNotes, useNoteActions } from "./store";
 
 const VisibilityFilter = () => {
   const {setFilter} = useNoteActions()
