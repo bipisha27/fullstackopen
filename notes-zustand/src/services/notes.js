@@ -11,15 +11,18 @@ const getAll = async () => {
 }
 
 const createNew = async (content) => {
-  const options = await fetch(baseUrl, {
+  const response = await fetch(baseUrl, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({content, important: false})
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      content,
+      important: false
+    })
   })
 
-  const response = await fetch(baseUrl, options)
-
-  if(!response.ok){
+  if (!response.ok) {
     throw new Error('failed to create note')
   }
 

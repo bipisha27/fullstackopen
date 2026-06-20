@@ -1,11 +1,13 @@
 import {create} from 'zustand'
 import noteService from './services/notes'
 
-const useNoteStore = create(devtools(set => ({
+const useNoteStore = create((set, get) => ({
   notes: [],
   filter: '',
   actions: {
       add: async (content) => {
+        console.log('add called', content)
+
         const newNote = await noteService.createNew(content)
         set(state => ({notes: state.notes.concat(newNote)}))
       },
@@ -24,7 +26,7 @@ const useNoteStore = create(devtools(set => ({
         set(() => ({notes}))
       }
     }
-})))
+}))
 
 export const useNotes = () => {
   const notes = useNoteStore((state) => state.notes)
