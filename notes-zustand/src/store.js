@@ -1,8 +1,7 @@
 import {create} from 'zustand'
-import {devtools} from 'zustand/middleware'
 import noteService from './services/notes'
 
-const useNoteStore = create(devtools((set, get) => ({
+const useNoteStore = create(devtools(set => ({
   notes: [],
   filter: '',
   actions: {
