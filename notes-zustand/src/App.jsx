@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNoteActions, useNotes } from './store'
 import NoteForm from './NoteForm'
 import NoteList from './NoteList'
