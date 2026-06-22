@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import useCounter from './hooks/useCounter'
 
 const Display = ({ counter }) => {
   return <div>{counter}</div>
@@ -9,36 +10,22 @@ const Button = ({ onClick, text }) => {
 }
 
 const App = () => {
-  const [counter, setCounter] = useState(0)
-
-  console.log('rendering with counter value', counter)
-
-  const increaseByOne = () => {
-
-    console.log('increasing, value before', counter)
-    setCounter(counter + 1)
-  }
-
-  const decreaseByOne = () => { 
-
-    console.log('decreasing, value before', counter)
-    setCounter(counter - 1)
-  }
-
-  const setToZero = () => {
-
-    console.log('resetting to zero, value before', counter)
-    setCounter(0)
-  }
+  const counter = useCounter()
 
   return (
     <div>
-      <Display counter={counter} />
-      <Button onClick={increaseByOne} text="plus" />
-      <Button onClick={setToZero} text="zero" />
-      <Button onClick={decreaseByOne} text="minus" />
+      <div>{counter.value}</div>
+      <button onClick={counter.increase}>
+        plus
+      </button>
+      <button onClick={counter.decrease}>
+        minus
+      </button>      
+      <button onClick={counter.zero}>
+        zero
+      </button>
     </div>
   )
-} 
+}
 
 export default App
