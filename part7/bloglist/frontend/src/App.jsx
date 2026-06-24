@@ -15,7 +15,9 @@ import BlogForm from './components/BlogForm'
 import SingleBlog from './components/SingleBlog'
 import styled from 'styled-components'
 import ErrorBoundary from './components/ErrorBoundary'
-import useNotificationStore from '../notificationStore'
+import useNotificationStore from './stores/notificationStore'
+import useUserStore from './stores/userStore'
+import useBlogStore from './stores/blogStore'
 
 const FormWrapper = styled.div`
   background: white;
@@ -199,10 +201,18 @@ const CreateBlog = ({ user, addBlog }) => {
 }
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
+  const blogs = useBlogStore((state) => state.blogs)
+  const initializeBlogs = useBlogStore((state) => state.initializeBlogs)
+  const addBlogToStore = useBlogStore((state) => state.addBlog)
+  const updateBlogInStore = useBlogStore((state) => state.updateBlog)
+  const removeBlogFromStore = useBlogStore((state) => state.removeBlog)
+
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
+
+  const user = useUserStore((state) => state.user)
+  const setUser = useUserStore((state) => state.setUser)
+  const clearUser = useUserStore((state) => state.clearUser)
 
   const notification = useNotificationStore((state) => state.notification)
   const showNotification = useNotificationStore(
@@ -218,7 +228,7 @@ const App = () => {
       setUser(user)
       blogService.setToken(user.token)
     }
-    blogService.getAll().then((blogs) => setBlogs(blogs))
+    initializeBlogs()
   }, [])
 
   const handleLogin = async (event) => {
@@ -239,14 +249,14 @@ const App = () => {
 
   const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogAppUser')
-    setUser(null)
+    clearUser()
     blogService.setToken(null)
   }
 
   const addBlog = async (blogObject, navigate) => {
     try {
       const returnedBlog = await blogService.create(blogObject)
-      setBlogs(blogs.concat(returnedBlog))
+      addBlogToStore(returnedBlog)
       showNotification(
         `a new blog "${returnedBlog.title}" by "${returnedBlog.author}" added`,
         'success'
@@ -264,7 +274,7 @@ const App = () => {
       user: blog.user?.id || blog.user,
     }
     const returnedBlog = await blogService.update(blog.id, updatedBlog)
-    setBlogs(blogs.map((b) => (b.id !== blog.id ? b : returnedBlog)))
+    updateBlogInStore(updatedBlog)
   }
 
   const handleDelete = async (blog, navigate) => {
@@ -273,7 +283,7 @@ const App = () => {
     )
     if (!confirmDelete) return
     await blogService.remove(blog.id)
-    setBlogs(blogs.filter((b) => b.id !== blog.id))
+    removeBlogFromStore(blog.id)
     navigate('/')
   }
 
