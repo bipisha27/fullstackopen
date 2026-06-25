@@ -274,7 +274,7 @@ const App = () => {
       user: blog.user?.id || blog.user,
     }
     const returnedBlog = await blogService.update(blog.id, updatedBlog)
-    updateBlogInStore(updatedBlog)
+    updateBlogInStore(returnedBlog)
   }
 
   const handleDelete = async (blog, navigate) => {
