@@ -25,6 +25,7 @@ blogsRouter.post('/', async (req, res) => {
     ...body,
     likes: body.likes ?? 0,
     user: user._id,
+    comments: [],
   })
   const savedBlog = await blog.save()
   user.blogs = user.blogs.concat(savedBlog._id)
@@ -70,6 +71,21 @@ blogsRouter.put('/:id', async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: 'Invalid blog ID' })
   }
+})
+
+blogsRouter.post('/:id/comments', async (req, res) => {
+  const { comment } = req.body
+  const blog = await Blog.findById(req.params.id)
+
+  if (!blog) {
+    return res.status(404).json({ error: 'blog not found' })
+  }
+
+  blog.comments = blog.comments.concat(comment)
+
+  const savedBlog = await blog.save()
+
+  res.status(201).json(savedBlog)
 })
 
 module.exports = blogsRouter

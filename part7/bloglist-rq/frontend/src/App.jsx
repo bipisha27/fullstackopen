@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react'
+
+import persistentUser from './services/persistentUser'
+
 import {
   BrowserRouter,
   Routes,
@@ -8,16 +11,38 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
+
 import Blog from './components/Blog'
+
 import blogService from './services/blogs'
 import loginService from './services/login'
+
 import BlogForm from './components/BlogForm'
 import SingleBlog from './components/SingleBlog'
+
 import styled from 'styled-components'
+
 import ErrorBoundary from './components/ErrorBoundary'
-import useNotificationStore from './stores/notificationStore'
-import useUserStore from './stores/userStore'
-import useBlogStore from './stores/blogStore'
+
+import {
+  useNotificationValue,
+  useNotificationDispatch,
+} from './contexts/NotificationContext'
+
+import {
+  useBlogs,
+  useCreateBlog,
+  useUpdateBlog,
+  useDeleteBlog,
+} from './hooks/useBlogs'
+
+import { useUserValue, useUserDispatch } from './contexts/UserContext'
+
+import { useField } from './hooks/useField'
+
+import UsersView from './components/UsersView'
+
+import UserView from './components/UserView'
 
 const FormWrapper = styled.div`
   background: white;
@@ -130,39 +155,47 @@ const BlogItem = styled.li`
   }
 `
 
-const LoginView = ({
-  user,
-  username,
-  password,
-  setUsername,
-  setPassword,
-  handleLogin,
-}) => {
+const LoginView = ({ user, handleLogin }) => {
+  const username = useField('text')
+  const password = useField('password')
+
   if (user) return <Navigate to="/" />
+
+  const submit = (event) => {
+    event.preventDefault()
+
+    handleLogin({ username: username.value, password: password.value }, () => {
+      username.reset()
+      password.reset()
+    })
+  }
+
   return (
     <FormWrapper>
       <h2>Login</h2>
-      <form onSubmit={handleLogin}>
+      <form onSubmit={submit}>
         <FormRow>
-          <Label>username</Label>
+          <Label>Username</Label>
           <Input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type={username.type}
+            value={username.value}
+            onChange={username.onChange}
           />
         </FormRow>
         <FormRow>
-          <Label>password</Label>
+          <Label>Password</Label>
           <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            type={password.type}
+            value={password.value}
+            onChange={password.onChange}
           />
         </FormRow>
-        <Button type="submit">login</Button>
+        <Button type="submit">Login</Button>
       </form>
     </FormWrapper>
   )
 }
+
 const BlogList = ({ blogs }) => {
   // throw new Error('simulated error')
 
@@ -186,7 +219,7 @@ const NotFound = () => (
   <div style={{ padding: '2em' }}>
     <h2>Page Not Found</h2>
     <p>The page you're looking for doesn't exist.</p>
-    <Link to="/">Go back to blogs</Link>
+    <Link to="/">go back to blogs</Link>
   </div>
 )
 
@@ -201,45 +234,36 @@ const CreateBlog = ({ user, addBlog }) => {
 }
 
 const App = () => {
-  const blogs = useBlogStore((state) => state.blogs)
-  const initializeBlogs = useBlogStore((state) => state.initializeBlogs)
-  const addBlogToStore = useBlogStore((state) => state.addBlog)
-  const updateBlogInStore = useBlogStore((state) => state.updateBlog)
-  const removeBlogFromStore = useBlogStore((state) => state.removeBlog)
+  const result = useBlogs()
+  const blogs = result.data || []
 
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const createBlogMutation = useCreateBlog()
+  const updateBlogMutation = useUpdateBlog()
+  const deleteBlogMutation = useDeleteBlog()
 
-  const user = useUserStore((state) => state.user)
-  const setUser = useUserStore((state) => state.setUser)
-  const clearUser = useUserStore((state) => state.clearUser)
+  const user = useUserValue()
+  const setUser = useUserDispatch()
 
-  const notification = useNotificationStore((state) => state.notification)
-  const showNotification = useNotificationStore(
-    (state) => state.showNotification
-  )
+  const notification = useNotificationValue()
+  const dispatch = useNotificationDispatch()
 
   const [loginMessage, setLoginMessage] = useState(null)
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
+    const loggedUser = persistentUser.getUser()
+    if (loggedUser) {
+      setUser(loggedUser)
+      blogService.setToken(loggedUser.token)
     }
-    initializeBlogs()
   }, [])
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
+  const handleLogin = async (credentials, resetFields) => {
     try {
-      const user = await loginService.login({ username, password })
-      window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user))
+      const user = await loginService.login(credentials)
+      persistentUser.saveUser(user)
       blogService.setToken(user.token)
       setUser(user)
-      setUsername('')
-      setPassword('')
+      resetFields()
       setLoginMessage(`${user.name} logged in`)
       setTimeout(() => setLoginMessage(null), 5000)
     } catch {
@@ -248,21 +272,21 @@ const App = () => {
   }
 
   const handleLogout = () => {
-    window.localStorage.removeItem('loggedBlogAppUser')
-    clearUser()
+    persistentUser.removeUser()
+    setUser(null)
     blogService.setToken(null)
   }
 
   const addBlog = async (blogObject, navigate) => {
     try {
-      const returnedBlog = await blogService.create(blogObject)
-      addBlogToStore(returnedBlog)
+      const returnedBlog = await createBlogMutation.mutateAsync(blogObject)
       showNotification(
         `a new blog "${returnedBlog.title}" by "${returnedBlog.author}" added`,
         'success'
       )
       navigate('/')
-    } catch {
+    } catch (error) {
+      console.log('addBlog failed: ', error)
       showNotification('failed to add blog', 'error')
     }
   }
@@ -273,8 +297,8 @@ const App = () => {
       likes: blog.likes + 1,
       user: blog.user?.id || blog.user,
     }
-    const returnedBlog = await blogService.update(blog.id, updatedBlog)
-    updateBlogInStore(returnedBlog)
+
+    await updateBlogMutation.mutateAsync({ id: blog.id, blog: updatedBlog })
   }
 
   const handleDelete = async (blog, navigate) => {
@@ -282,9 +306,16 @@ const App = () => {
       `Remove blog "${blog.title}" by "${blog.author}"?`
     )
     if (!confirmDelete) return
-    await blogService.remove(blog.id)
-    removeBlogFromStore(blog.id)
+
+    await deleteBlogMutation.mutateAsync(blog.id)
     navigate('/')
+  }
+
+  const showNotification = (message, type = 'success') => {
+    dispatch({ type: 'SHOW', payload: { message, type } })
+    setTimeout(() => {
+      dispatch({ type: 'CLEAR' })
+    }, 5000)
   }
 
   return (
@@ -294,7 +325,8 @@ const App = () => {
           <h1 style={{ color: 'white', margin: 0 }}>BLOGS APP</h1>
           <NavLinks>
             <Link to="/">Blogs</Link>
-            {user ? (
+            <Link to="/users">Users</Link>
+            {user ? ( //fragment tag to let us group multiple elements like link, logout link w/o adding extra wrapping //
               <>
                 <Link to="/create">New Blog</Link>
                 <LogoutLink onClick={handleLogout}>Logout</LogoutLink>
@@ -327,20 +359,12 @@ const App = () => {
 
         <ErrorBoundary>
           <Routes>
+            <Route path="/users" element={<UsersView />} />
+
+            <Route path="/users/:id" element={<UserView />} />
+
             <Route path="/" element={<BlogList blogs={blogs} />} />
-            <Route
-              path="/login"
-              element={
-                <LoginView
-                  user={user}
-                  username={username}
-                  password={password}
-                  setUsername={setUsername}
-                  setPassword={setPassword}
-                  handleLogin={handleLogin}
-                />
-              }
-            />
+
             <Route
               path="/blogs/:id"
               element={
@@ -352,6 +376,12 @@ const App = () => {
                 />
               }
             />
+
+            <Route
+              path="/login"
+              element={<LoginView user={user} handleLogin={handleLogin} />}
+            />
+
             <Route
               path="/create"
               element={<CreateBlog user={user} addBlog={addBlog} />}

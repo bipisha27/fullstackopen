@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { useAddComment } from '../hooks/useBlogs'
 
 const BlogCard = styled.div`
   background: white;
@@ -48,6 +50,25 @@ const LikeButton = styled.button`
   }
 `
 
+const CommentButton = styled.button`
+  background: #4a90e2;
+  color: white;
+  border: none;
+  padding: 0.4em 1em;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  margin-left: 0.5em;
+
+  &:hover {
+    background: #357abd;
+  }
+`
+
+const CommentInput = styled.input`
+  padding: 0.4em 0.5em;
+`
+
 const DeleteButton = styled.button`
   background: #e74c3c;
   color: white;
@@ -71,6 +92,21 @@ const SingleBlog = ({ blogs, user, handleLike, handleDelete }) => {
   const isCreator =
     user && String(blog.user?.id || blog.user) === String(user.id)
 
+  const [comment, setComment] = useState('')
+
+  const addCommentMutation = useAddComment()
+
+  const handleComment = async (event) => {
+    event.preventDefault()
+
+    await addCommentMutation.mutateAsync({
+      id: blog.id,
+      comment,
+    })
+
+    setComment('')
+  }
+
   return (
     <BlogCard>
       <Title>{blog.title}</Title>
@@ -84,6 +120,24 @@ const SingleBlog = ({ blogs, user, handleLike, handleDelete }) => {
         {user && <LikeButton onClick={() => handleLike(blog)}>like</LikeButton>}
       </LikeRow>
       <InfoRow>Added by {blog.user?.name}</InfoRow>
+
+      <h3>Comments</h3>
+
+      <form onSubmit={handleComment}>
+        <CommentInput
+          placeholder="add a comment"
+          value={comment}
+          onChange={({ target }) => setComment(target.value)}
+        />
+        <CommentButton type="submit">ADD COMMENT</CommentButton>
+      </form>
+
+      <ul>
+        {blog.comments?.map((comment, index) => (
+          <li key={index}>{comment}</li>
+        ))}
+      </ul>
+
       {isCreator && (
         <DeleteButton onClick={() => handleDelete(blog, navigate)}>
           remove

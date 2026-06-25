@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import styled from 'styled-components'
+import { useField } from '../hooks/useField'
 
 const FormWrapper = styled.div`
   background: white;
@@ -51,17 +51,20 @@ const Button = styled.button`
 `
 
 const BlogForm = ({ createBlog }) => {
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
+  const title = useField('text')
+  const author = useField('text')
+  const url = useField('text')
 
   const handleSubmit = (event) => {
     event.preventDefault()
     createBlog({
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl,
+      title: title.value,
+      author: author.value,
+      url: url.value,
     })
+    title.reset()
+    author.reset()
+    url.reset()
   }
 
   return (
@@ -71,26 +74,22 @@ const BlogForm = ({ createBlog }) => {
         <FormRow>
           <Label>title</Label>
           <Input
-            name="title"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
+            type={title.type}
+            value={title.value}
+            onChange={title.onChange}
           />
         </FormRow>
         <FormRow>
           <Label>author</Label>
           <Input
-            name="author"
-            value={newAuthor}
-            onChange={(e) => setNewAuthor(e.target.value)}
+            type={author.type}
+            value={author.value}
+            onChange={author.onChange}
           />
         </FormRow>
         <FormRow>
           <Label>url</Label>
-          <Input
-            name="url"
-            value={newUrl}
-            onChange={(e) => setNewUrl(e.target.value)}
-          />
+          <Input type={url.type} value={url.value} onChange={url.onChange} />
         </FormRow>
         <Button type="submit">create</Button>
       </form>
