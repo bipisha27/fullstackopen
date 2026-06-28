@@ -1,0 +1,8 @@
+node_modules/
+.env
+dist/
+coverage/
+playwright-report/
+test-results/
+*.lock
+part7/esbuild-example/
