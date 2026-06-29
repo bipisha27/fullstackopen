@@ -5,6 +5,5 @@ coverage/
 playwright-report/
 test-results/
 *.lock
-mongo password
 
 part7/esbuild-example/
