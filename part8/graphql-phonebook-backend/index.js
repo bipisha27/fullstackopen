@@ -1,115 +1,14 @@
-const { ApolloServer } = require('@apollo/server')
-const { startStandaloneServer } = require('@apollo/server/standalone')
-const { v1: uuid } = require('uuid')
-const {GraphQLError} = require('graphql')
+require("dotenv").config();
 
-let persons = [
-  {
-    name: 'Arto Hellas',
-    phone: '040-123543',
-    street: 'Tapiolankatu 5 A',
-    city: 'Espoo',
-    id: '3d594650-3436-11e9-bc57-8b80ba54c431',
-  },
-  {
-    name: 'Matti Luukkainen',
-    phone: '040-432342',
-    street: 'Malminkaari 10 A',
-    city: 'Helsinki',
-    id: '3d599470-3436-11e9-bc57-8b80ba54c431',
-  },
-  {
-    name: 'Venla Ruuska',
-    street: 'Nallemäentie 22 C',
-    city: 'Helsinki',
-    id: '3d599471-3436-11e9-bc57-8b80ba54c431',
-  },
-]
+const connectToDatabase = require("./db");
+const startServer = require("./server");
 
-const typeDefs = `#graphql
-  type Address {
-    street: String!
-    city: String!
-  }
+const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 4000;
 
-  type Person {
-    name: String!
-    phone: String
-    address: Address!
-    id: ID!
-  }
+const main = async () => {
+  await connectToDatabase(MONGODB_URI);
+  startServer(PORT);
+};
 
-  type Query {
-    personCount: Int!
-    allPersons: [Person!]!
-    findPerson(name: String!): Person
-  }
-
-  type Mutation {
-    addPerson(
-      name: String!
-      phone: String
-      street: String!
-      city: String!
-    ): Person
-    editNumber(name: String!, phone:String!): Person
-  }
-`
-
-
-const resolvers = {
-  Query: {
-    personCount: () => persons.length,
-    allPersons: () => persons,
-    findPerson: (root, args) =>
-      persons.find((p) => p.name === args.name),
-  },
-  Mutation: {
-    addPerson: (root, args) => {
-      if (persons.find((p) => p.name === args.name)) {
-        throw new GraphQLError(`Name must be unique: ${args.name}`, {
-          extensions: {
-            code: 'BAD_USER_INPUT',
-            invalidArgs: args.name,
-          },
-        })
-      }
-
-      const person = {
-        ...args,
-        id: uuid(),
-      }
-      persons = persons.concat(person)
-      return person
-    },
-
-    editNumber: (root, args) => {
-      const person = persons.find((p) => p.name === args.name)
-      if (!person) {
-        return null
-      }
-
-      const updatedPerson = { ...person, phone: args.phone }
-      persons = persons.map((p) => (p.name === args.name ? updatedPerson : p))
-
-      return updatedPerson
-    },
-  },
-  Person: {
-    address: (root) => ({
-      street: root.street,
-      city: root.city,
-    }),
-  },
-}
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
-
-startStandaloneServer(server, {
-  listen: { port: 4000 },
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
-})
+main();
