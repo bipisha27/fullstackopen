@@ -61,7 +61,7 @@ const resolvers = {
         currentUser.friends = currentUser.friends.concat(person);
         await currentUser.save();
       } catch (error) {
-        throw new GraphQLError(`saving person failed: ', ${error.message}`, {
+        throw new GraphQLError(`saving person failed: ${error.message}`, {
           extensions: {
             code: "BAD_USER_INPUT",
             invalidArgs: args.name,
@@ -69,6 +69,7 @@ const resolvers = {
           },
         });
       }
+
       return person;
     },
 
@@ -126,7 +127,9 @@ const resolvers = {
         id: user._id,
       };
 
-      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) };
+      return {
+        value: jwt.sign(userForToken, process.env.JWT_SECRET),
+      };
     },
 
     addAsFriend: async (root, args, { currentUser }) => {
@@ -138,12 +141,11 @@ const resolvers = {
         });
       }
 
-      //returns true if the person's id is not already in current user's friends list
+      // Returns true if the person's id is not already in current user's friends list
       const noFriendAlready = (person) =>
         !currentUser.friends
           .map((f) => f._id.toString())
           .includes(person._id.toString());
-      //create an array of the current user's friend ids and check whether the given person's id is missing for it
 
       const person = await Person.findOne({ name: args.name });
 
@@ -157,12 +159,23 @@ const resolvers = {
       }
 
       if (noFriendAlready(person)) {
-        currentUser.friends.concat(person);
+        currentUser.friends = currentUser.friends.concat(person);
       }
 
       await currentUser.save();
 
       return currentUser;
+    },
+
+    _resetDatabase: async () => {
+      if (process.env.NODE_ENV !== "test") {
+        throw new GraphQLError("_resetDatabase is only available in test mode");
+      }
+
+      await Person.deleteMany({});
+      await User.deleteMany({});
+
+      return true;
     },
   },
 };

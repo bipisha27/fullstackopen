@@ -6,8 +6,8 @@ const typeDefs = `#graphql
 
   type Person {
     name: String!
-    phone: String!
-    address: Address!
+    phone: String
+    address: Address
     id: ID!
   }
 
@@ -48,6 +48,8 @@ const typeDefs = `#graphql
     login(username: String!, password: String!): Token
 
     addAsFriend(name: String): User
+    
+    _resetDatabase: Boolean
   }
 `;
 
