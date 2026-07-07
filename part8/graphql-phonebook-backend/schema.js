@@ -33,6 +33,10 @@ const typeDefs = `#graphql
     me: User
   }
 
+  type Subscription {
+    personAdded: Person!
+  }
+
   type Mutation {
     addPerson(
       name: String!
