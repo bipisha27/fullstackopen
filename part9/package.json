@@ -9,13 +9,18 @@
     "tsc": "tsc",
     "multiply": "tsc && node multiplier.ts",
     "start": "tsc && node index.ts",
-    "dev": "concurrently \"tsc --watch\" \"node -- watch index.ts\""
+    "dev": "concurrently \"tsc --watch\" \"node -- watch index.ts\"",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/express": "^5.0.6",
     "@types/node": "^26.1.1",
     "concurrently": "^10.0.3",
-    "typescript": "^5.9.3"
+    "eslint": "^10.7.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.63.0"
   },
   "keywords": [],
   "author": "",

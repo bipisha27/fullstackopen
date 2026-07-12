@@ -17,9 +17,11 @@ const parseArguments = (args: string[]): MultiplyValues => {
   }
 };
 
-const multiplicator = (a: number, b: number, printText: string) => {
+export const multiplicator = (a: number, b: number, printText: string) => {
   console.log(printText, a * b);
 };
+
+export type Operation = "multiply" | "add" | "divide";
 
 try {
   const { value1, value2 } = parseArguments(process.argv);

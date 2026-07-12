@@ -1,8 +1,24 @@
 import express from "express";
+import { multiplicator, type Operation } from "./multiplier.ts";
+
 const app = express();
 
 app.get("/ping", (_req, res) => {
   res.send("pong");
+});
+
+app.post("/calculate", (req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { value1, value2, op } = req.body;
+
+  if (!value1 || isNaN(Number(value1))) {
+    return res.status(400).send({ error: "..." });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const result = multiplicator(Number(value1), Number(value2), op as Operation);
+
+  return res.send({ result });
 });
 
 const PORT = 3003;
