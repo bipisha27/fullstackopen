@@ -1,0 +1,27 @@
+{
+  "name": "flight-diaries",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "tsc": "tsc",
+    "dev": "concurrently \"tsc --watch\" \"node --watch --experimental-transform-types index.ts\"",
+    "start": "node --experimental-transform-types index.ts",
+    "lint": "eslint ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/express": "^5.0.6",
+    "concurrently": "^10.0.3",
+    "eslint": "^10.7.0",
+    "typescript": "5.9",
+    "typescript-eslint": "^8.63.0"
+  }
+}
