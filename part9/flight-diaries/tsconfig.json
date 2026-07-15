@@ -10,6 +10,5 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src", "src/**/*", "**/*.ts", "**/*.tsx", "**/*.js"]
+  }
 }

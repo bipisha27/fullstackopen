@@ -1,16 +1,16 @@
 import { Visibility, Weather } from "./types.js";
 import type { NewDiaryEntry } from "./types.js";
+import { z } from "zod";
 
-const parseNewDiaryEntry = (object: unknown): NewDiaryEntry => {
-  console.log(object);
-  const newEntry: NewDiaryEntry = {
-    weather: "cloudy",
-    visibility: "great",
-    date: "2026-1-1",
-    comment: "fake news",
-  };
+const NewEntrySchema = z.object({
+  weather: z.enum(Weather),
+  visibility: z.enum(Visibility),
+  date: z.iso.date(),
+  comment: z.string().optional(),
+});
 
-  return newEntry;
+export const parseNewDiaryEntry = (object: unknown): NewDiaryEntry => {
+  return NewEntrySchema.parse(object);
 };
 
 const isString = (text: unknown): text is string => {
@@ -18,10 +18,7 @@ const isString = (text: unknown): text is string => {
 };
 
 const parseComment = (comment: unknown): string => {
-  if (!comment || !isString(comment)) {
-    throw new Error("incorrect or missing comment");
-  }
-  return comment;
+  return z.string().parse(comment);
 };
 
 const isDate = (date: string): boolean => {
